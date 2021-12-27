@@ -1,0 +1,175 @@
+     A* Licensing terms.
+     A* This is free software; you can redistribute it and/or
+     A* modify it under the terms of the GNU General Public License as published
+     A* by the Free Software Foundation; either version 2 of the License, or
+     A* (at your option) any later version.
+     A*
+     A* It is distributed in the hope that it will be useful,
+     A* but WITHOUT ANY WARRANTY; without even the implied warranty of
+     A* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     A* GNU General Public License for more details.
+     A*
+     A* You should have received a copy of the GNU General Public License
+     A* along with this; if not, write to the Free Software
+     A* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+     A* or get it at http://www.gnu.org/licenses/gpl.html
+     A*
+     A* Globals ----------------------------------------------------------------
+     A                                      REF(CLIDTRNSPF)
+     A                                      ERRSFL
+     A                                      HELP
+     A                                      ALTHELP(CA01)
+     A* Subfile Screen ---------------------------------------------------------
+     A          R MAINSFL                   SFL
+     A  99                                  SFLNXTCHG
+     A*         ##What may we do with the selected record?
+     A            OPT            1A  B  7  3VALUES(' ' '2' '3' '4' '5')
+     A  99                                  DSPATR(RI)
+     A*         ##Pull values from the table definition itself...
+     A            CLID      R     M     7  7
+     A            CLNAME    R           7 21
+     A* Subfile Control Screen -------------------------------------------------
+     A          R MAINCTL                   SFLCTL(MAINSFL)
+     A*                                   ##Command Key definitions.
+     A                                      CA03(03 'Verlassen')
+     A                                      CA05(05 'Aktualisieren')
+     A                                      CA06(06 'Neu')
+     A                                      CA12(12 'Abbrechen')
+     A                                      VLDCMDKEY(29 'Any valid key')
+     A*                                   ##Basic Settings for subfile ctrl.
+     A                                      OVERLAY
+     A                                      PUTRETAIN
+     A  91                                  SFLMSGID(ERR0012 GENERICMSG 91)
+     A  92                                  SFLMSGID(ERR1021 GENERICMSG 92)
+     A  93                                  SFLMSGID(ERR1218 GENERICMSG 93)
+     A  95                                  SFLMSGID(INF0001 GENERICMSG 95)
+     A  96                                  SFLMSGID(INF0999 GENERICMSG 96)
+     A                                      SFLSIZ(30)
+     A                                      SFLPAG(15)
+     A  31                                  SFLDSP
+     A  32                                  SFLDSPCTL
+     A  33                                  SFLCLR
+     A  34                                  SFLEND(*MORE)
+     A                                      SFLCSRRRN(&SFLCSRRRN)
+     A            SFLRCDNBR      3S 0H      SFLRCDNBR(CURSOR)
+     A            SFLCSRRRN      5S 0H
+     A*         ##End of definitions. Here be real screen elements.
+     A                                  1 29'Rufnummern-Übersetzung'
+     A                                      DSPATR(HI)
+     A                                  3  2'Auswahl eingeben und -
+     A                                      Eingabetaste drücken.'
+     A                                      COLOR(BLU)
+     A                                  4  3'2=Ändern  3=Duplizieren  -
+     A                                      4=Löschen  5=Anzeigen'
+     A                                      COLOR(BLU)
+     A                                  6  2'Opt' DSPATR(HI)
+     A                                  6  7'Rufnummer' DSPATR(HI)
+     A                                  6 21'Name' DSPATR(HI)
+     A* Footer of the form -----------------------------------------------------
+     A* A subfile control record may contain elements above or below
+     A* the actual subfile, but not both.
+     A          R MAINBTM                   OVERLAY PUTRETAIN
+     A                                 23  2'F1=Hilfe   -
+     A                                      F3=Verlassen   -
+     A                                      F5=Aktualisieren   -
+     A                                      F6=Neu   -
+     A                                      F12=Abbrechen'
+     A                                      COLOR(BLU)
+     A* No data instead of SFL -------------------------------------------------
+     A          R MAINND                    OVERLAY PUTRETAIN
+     A                                  8  7'(Keine Datensätze zum Anzeigen.)'
+     A* ------------------------------------------------------------------------
+     A* Subfile Screen: Delete confirmation ------------------------------------
+     A          R DLTSFL                    SFL
+     A                                      SFLNXTCHG
+     A            DOPT           1A  B  7  3VALUES(' ' '4')
+     A  99                                  DSPATR(RI)
+     A*         ##Pull values from the table definition itself...
+     A*           You can also use REFFLD(MAINSFL/FLDNAME *SRC)
+     A            CLID      R     M     7  7
+     A            CLNAME    R           7 21
+     A* Subfile Control Screen -------------------------------------------------
+     A          R DLTCTL                    SFLCTL(DLTSFL)
+     A*                                   ##Command Key definitions.
+     A                                      CA12(12 'Abbrechen')
+     A                                      VLDCMDKEY(29 'Any valid key')
+     A*                                   ##Basic Settings for subfile ctrl.
+     A                                      OVERLAY
+     A                                      PUTRETAIN
+     A  91                                  SFLMSGID(ERR0012 GENERICMSG 91)
+     A  93                                  SFLMSGID(ERR1218 GENERICMSG 93)
+     A  96                                  SFLMSGID(INF0999 GENERICMSG 96)
+     A                                      SFLSIZ(30)
+     A                                      SFLPAG(15)
+     A  31                                  SFLDSP
+     A  32                                  SFLDSPCTL
+     A  33                                  SFLCLR
+     A  34                                  SFLEND(*MORE)
+     A            SFLDLTNBR      3S 0H      SFLRCDNBR(CURSOR)
+     A*         ##End of definitions. Here be real screen elements.
+     A                                  1 29'Löschen von Einträgen'
+     A                                      DSPATR(HI)
+     A                                  3  2'Auswahl ggfs. anpassen und -
+     A                                      Eingabetaste drücken.'
+     A                                      COLOR(BLU)
+     A                                  4  3'4=Löschen  Leer=Nicht löschen'
+     A                                      COLOR(BLU)
+     A                                  6  2'Opt' DSPATR(HI)
+     A                                  6  7'Wert' DSPATR(HI)
+     A                                  6 21'Eintrag' DSPATR(HI)
+     A* Footer of the form -----------------------------------------------------
+     A* A subfile control record may contain elements above or below
+     A* the actual subfile, but not both.
+     A          R DLTBTM                    OVERLAY PUTRETAIN
+     A                                 23  2'F1=Hilfe   F12=Abbrechen'
+     A                                      COLOR(BLU)
+     A* ------------------------------------------------------------------------
+     A* ------------------------------------------------------------------------
+     A* One form for displaying further details, or editing existing, or
+     A* adding new records. We can switch this form to "looks like
+     A* output only fields" with IN44.
+     A          R DETAILFRM
+     A                                      CHGINPDFT(LC UL)
+     A                                      CHANGE(28 'Content has changed')
+     A                                      CA03(03 'Verlassen')
+     A                                      CA12(12 'Abbrechen')
+     A                                      RTNCSRLOC(*RECNAME &CSREC &CSFLD)
+     A  42N43                           1 30'Neuen Eintrag erfassen'
+     A                                      DSPATR(HI)
+     A N42 43                           1 32'Eintrag ändern'
+     A                                      DSPATR(HI)
+     A N42N43                           1 31'Eintrag anzeigen'
+     A                                      DSPATR(HI)
+     A  42N43                           3  2'Felder ausfüllen und Eingabetaste -
+     A                                      drücken.'
+     A                                      COLOR(BLU)
+     A N42 43                           3  2'Felder anpassen und Eingabetaste -
+     A                                      drücken.'
+     A                                      COLOR(BLU)
+     A N42N43                           3  2'Details:'
+     A                                      COLOR(BLU)
+     A                                  5  3'Rufnummer . . .'
+     A            CLID      R     M  B  5 19
+     A  44                                  DSPATR(PR)
+     A N44                                  DSPATR(UL)
+     A N44 60                               DSPATR(PC)
+     A  92                                  ERRMSGID(ERR1021 GENERICMSG 92)
+     A                                  7  3'Name  . . . . .'
+     A            CLNAME    R        B  7 19
+     A  44                                  DSPATR(PR)
+     A N44                                  DSPATR(UL)
+     A N44 61                               DSPATR(PC)
+     A                                 23  2'F1=Hilfe   F3=Verlassen   -
+     A                                      F12=Abbrechen'
+     A                                      COLOR(BLU)
+     A* This is entirely to prevent DSPATR(RI) error indication with just a
+     A*  warning message. Place in least used screen position.
+     A            DUMMY$$        1A  O 23 80DSPATR(ND)
+     A  91                                  ERRMSGID(ERR0012 GENERICMSG 91)
+     A  93                                  ERRMSGID(ERR1218 GENERICMSG 93)
+     A  94                                  ERRMSGID(RDO1218 GENERICMSG 94)
+     A  95                                  ERRMSGID(INF0001 GENERICMSG 95)
+     A            CSREC         10A  H
+     A            CSFLD         10A  H
+     A* For vim ----------------------------------------------------------------
+     A* vim: syntax=dds colorcolumn=81 autoindent
