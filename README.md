@@ -18,22 +18,24 @@ Well... ODBC access from Debian Linux to older OS/400 releases broke quite a
 time ago.  When doing a trace on OS/400 what happens, the Hostserver *DATABASE
 task complains about an uneven memory access (odd memory address?) and sends
 back error. Funnily, this happens *only* with Asterisk ODBC support, and with
-isql, the command line ODBC client. No queries possible besides HELP, which just
-generates a list of libraries and files to see, as before. The fault is probably
-dependent on current time, because reverting to older versions of LinuxODBC
-didn't help. The interesting part is: It still works with Perl's DBI::ODBC.
+`isql`, the command line ODBC client. No queries possible besides HELP, which
+just generates a list of libraries and files to see, as before. The fault is
+probably dependent on current time, because reverting to older versions of
+LinuxODBC didn't help. The interesting part is: It still works with Perl's
+DBI::ODBC.
 
 However, the mixed EBCDIC vs. ASCII worlds, a strong indication of a bug in
 OS/400 and the lack of source code for it to eventually fix the issue gave way
 to try other means.
 
 The second important motivation is that my main machine is an old AS/400 9401
-model 150. It's slow, depending on what you do. SQL is slow. Inetd is slow. Thus
-I came up with the idea of a most simple UDP listener which can be contacted by
-simple Netcat call. Additionally, I was searching for some meaningful work
-besides just editing database content via green screen. See [my AS/400
-Wiki](https://try-as400.pocnet.net) for details around this highly interesting
-platform.
+model 150. It's slow, depending on what you do. SQL is slow. Inetd is slow.
+Startup times are in the one to two second range, without any meaningful work
+being done! Thus I came up with the idea of a most simple UDP listener which
+can be contacted by simple Netcat call. Additionally, I was searching for some
+meaningful work besides just editing database content via green screen. See [my
+AS/400 Wiki](https://try-as400.pocnet.net) for details around this highly
+interesting platform.
 
 ## How to get it to run
 First, the daemon is meant to run in a separate subsystem, so it can be easily
