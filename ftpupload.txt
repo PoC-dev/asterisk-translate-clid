@@ -1,0 +1,7 @@
+ascii
+put calltransd.c    ASTSUPPORT/SOURCES.CALLTRANSD
+put clidtrnsdf.dds  ASTSUPPORT/SOURCES.CLIDTRNSDF
+put clidtrnslf.dds  ASTSUPPORT/SOURCES.CLIDTRNSLF
+put clidtrnspf.dds  ASTSUPPORT/SOURCES.CLIDTRNSPF
+put clidtrnspg.rple ASTSUPPORT/SOURCES.CLIDTRNSPG
+quit
