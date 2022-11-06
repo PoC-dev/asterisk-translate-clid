@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Patrik Schindler <poc@pocnet.net>.
+ * Copyright 2021-2022 Patrik Schindler <poc@pocnet.net>.
  *
  * Licensing terms.
  * This is free software; you can redistribute it and/or
@@ -16,6 +16,11 @@
  * along with this; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * or get it at http://www.gnu.org/licenses/gpl.html
+ *
+ * Based on the skeleton "Programming udp sockets in C on Linux
+ * Silver Moon <m00n.silv3r@gmail.com>
+ * http://www.binarytides.com/programming-udp-sockets-in-c-on-linux/
+ *
  */
 
 #include <errno.h>
@@ -31,42 +36,41 @@
 #include <sys/types.h>      /* socket */
 #include <signal.h>
 #include <sys/signal.h>
-#include <unistd.h>         /* socket.close, dup */
+#include <unistd.h>
 #include <qtqiconv.h>
 #include <qp0ztrc.h>
 
-/*------------------------------------------------------------------------------
- * Files
- * Important! This statement is about the compiled object, not the source!
- */
+/* Files ---------------------------------------------------------------------*/
+
+/* Important! This statement is about the compiled object, not the source! */
 #pragma mapinc("TRANSTBL", "ASTSUPPORT/CLIDTRNSLF(*ALL)", "input", "_P", "")
 #include "TRANSTBL"
 #define _TRANSRECSZ sizeof(transrec)
 
-/*------------------------------------------------------------------------------
- * Defines
- */
+/* Defines -------------------------------------------------------------------*/
 
 /* How much memory to put aside for the static string buffers? */
-#define BUFSIZE 81
+#define BUFSIZE 512
+
+/* Defines for CRLF. */
+#define _CR 0xd
+#define _LF 0xa
 
 /* Global variables, so we can easily iconv anywhere in our code. */
 iconv_t a_e_ccsid;
 iconv_t e_a_ccsid;
 int exit_flag;
 
-/*------------------------------------------------------------------------------
- * Send a message to the job log, and then exit with error.
- */
+/* Actual Code ---------------------------------------------------------------*/
+
+/* Send a message to the job log, and then exit with error. ------------------*/
 
 void die(char *s) {
     Qp0zLprintf("%s: %s\n", s, strerror(errno));
     exit(1);
 }
 
-/*------------------------------------------------------------------------------
- * Charset conversion
- */
+/* Charset conversion. -------------------------------------------------------*/
 
 int convert_buffer(char *inBuf, char *outBuf, int inBufLen, int outBufLen,
                 iconv_t table) {
@@ -85,9 +89,7 @@ int convert_buffer(char *inBuf, char *outBuf, int inBufLen, int outBufLen,
     return(retval);
 }
 
-/*------------------------------------------------------------------------------
- * Print EBCDIC buffer to string as ASCII.
- */
+/* Print EBCDIC buffer to string as ASCII. -----------------------------------*/
 
 int seprintf(iconv_t convtable, char *dststr, char *format, ...) {
     va_list va;
@@ -108,17 +110,13 @@ int seprintf(iconv_t convtable, char *dststr, char *format, ...) {
     return(0);
 }
 
-/*------------------------------------------------------------------------------
- * What to do when we receive a SIGTERM.
- */
+/* What to do when we receive a SIGTERM. -------------------------------------*/
 
 void set_exit_flag(int signum) {
     exit_flag = 1;
 }
 
-/*------------------------------------------------------------------------------
- * Main
- */
+/* Main. ---------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
 	_RFILE *fp;
@@ -126,17 +124,20 @@ int main(int argc, char *argv[]) {
     ASTSUPPORT_CLIDTRNSLF_CLIDTRNSTB_i_t transrec;
     QtqCode_T jobCode = {0,0,0,0,0,0};
     QtqCode_T asciiCode = {819,0,0,0,0,0};
-    char asciiBuf[BUFSIZE], ebcdicBuf[BUFSIZE], *number;
-    int sockfd, len;
-    unsigned int i, n;
     struct sockaddr_in server_addr, client_addr;
     struct servent *whoami;
     struct sigaction termaction;
+    char asciiBuf[BUFSIZE], ebcdicBuf[BUFSIZE], cmdBuf[BUFSIZE], *number;
+    int sockfd, len;
+    static int setsockopt_flag=1;
+    unsigned int strlen, i, n;
+
 
     /* Create signal handler for SIGTERM. */
     memset(&termaction, 0, sizeof(struct sigaction));
     termaction.sa_handler = set_exit_flag;
     sigaction(SIGTERM, &termaction, NULL);
+
 
     /* Create the conversion tables */
     /* ASCII to EBCDIC */
@@ -153,55 +154,82 @@ int main(int argc, char *argv[]) {
         Qp0zLprintf("QtqIconvOpen Failed");
     }
 
-    /* Prepare Socket */
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-        die("socket(): failed");
+
+    /* Prepare Networking - note that statement ordering is important! */
+
+    /* Keep trying to socket for 15 mins, so TCP/IP has enough time to start. */
+    for ( i = 0; i <= 900; i++ ) {
+        if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1 ) {
+            sleep(1);
+        } else {
+            break;
+        }
     }
+    if ( i >= 900 ) {
+        Qp0zLprintf("Tried socket() %d times, giving up. Last error was %s.\n",
+            i, strerror(errno));
+        exit(1);
+    } else {
+        Qp0zLprintf("socket(): got fd %d after %d tries: %s\n",
+            sockfd, i++, strerror(errno));
+    }
+
+
+    if ( (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+            (char *)&setsockopt_flag, sizeof(setsockopt_flag)) == -1) ) {
+        die("setsockopt(): failed");
+    }
+
+
+    /* Zero Struct. */
     memset(&server_addr, 0, sizeof(server_addr));
     memset(&client_addr, 0, sizeof(client_addr));
 
+    /* Setup. */
     whoami = getservbyname("calltransd", "udp");
     if ( whoami == 0 ) {
         die("Could not find myself in /etc/services");
     }
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(whoami->s_port);
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     endservent();
 
-    if ( (bind(sockfd, (struct sockaddr *)&server_addr,
-            sizeof(server_addr))) < 0 ) {
-        die("bind(): failed");
-    }
     len = sizeof(client_addr);
+
+    /* Bind socket to port. */
+    if ( (bind(sockfd, (struct sockaddr *)&server_addr,
+            sizeof(server_addr))) == -1 ) {
+        die("bind");
+    }
+
 
 	/* Open file with updating only the number of r/w bytes in _RIOFB_T */
 	if ((fp = _Ropen ("ASTSUPPORT/CLIDTRNSLF", "rr, riofb=n")) == NULL) {
 		die("Error opening database file");
 	}
 
+
     /* Keep listening for data */
     while( exit_flag == 0 ) {
         /* Erase buffers for use */
         memset(asciiBuf, '\0', BUFSIZE);
         memset(ebcdicBuf, '\0', BUFSIZE);
+        memset(cmdBuf, '\0', BUFSIZE);
 
-        /* Read packet from network. client_addr will contain sender info. */
-        /* FIXME: Get rid of GOTO. This is sooo BASIC-like... */
-        tryagain:
-        if ((n = recvfrom(sockfd, asciiBuf, BUFSIZE, 0,
-                (struct sockaddr *)&client_addr, &len)) < 0) {
-            if (errno == EINTR) {
-                goto tryagain;
+        /* Read packet from network. Client_addr will contain sender info. */
+        if ( (n = recvfrom(sockfd, asciiBuf, BUFSIZE, 0,
+                    (struct sockaddr *)&client_addr, &len)) == -1) {
+            if ( errno == EINTR ) {
+                continue;
             } else {
                 die("recvfrom()");
             }
         }
 
         /* Convert EOL to EOS */
-        for ( i=0; i++; i<BUFSIZ ) {
-            /* FIXME: Don't hard code these values. */
-            if ( asciiBuf[i] == 0xd || asciiBuf[i] == 0xa ) {
+        for ( i = 0; i++; i < BUFSIZ ) {
+            if ( asciiBuf[i] == _CR || asciiBuf[i] == _LF ) {
                 asciiBuf[i] = '\0';
             }
         }
@@ -209,13 +237,13 @@ int main(int argc, char *argv[]) {
         /* Short cut for an empty input line. */
         if ( strlen(asciiBuf) >= 1 ) {
 
-            /* Convert so we understand what we've been asked what to do. */
+            /* Convert to EBCDIC, so we understand
+             * what we've been asked to do.
+             */
             convert_buffer(asciiBuf, ebcdicBuf, strlen(asciiBuf),
                     strlen(asciiBuf), a_e_ccsid);
 
-            /* FIXME: Better use strtok before comparison? */
-            if ( strncmp(ebcdicBuf, "translate", 9) == 0 ||
-                    strncmp(ebcdicBuf, "TRANSLATE", 9) == 0 ) {
+            if ( strncmp(ebcdicBuf, "TRANSLATE", 9) == 0 ) {
                 /* Extract number to translate. */
                 number = strtok(ebcdicBuf, " ");
                 number = strtok(NULL, " ");
@@ -227,16 +255,32 @@ int main(int argc, char *argv[]) {
                 rfb = _Rreadk(fp, &transrec, _TRANSRECSZ, __DFT,
                         number, strlen(number));
                 memset(ebcdicBuf, '\0', BUFSIZE);
+
+                /* FIXME: Error handling! We only know if there was something
+                 *        wrong when we don't receive a full-sized record,
+                 *        but we wanna know *what* went wrong, also.
+                 */
                 if (( rfb->num_bytes < _TRANSRECSZ )) {
-                    Qp0zLprintf("rfb->num_bytes = %d, sending back %s",
+                    Qp0zLprintf("rfb->num_bytes = %d, sending back '%s'\n",
                         rfb->num_bytes, number);
                     seprintf(e_a_ccsid, ebcdicBuf, "%s", number);
+
                 } else {
-                    transrec.CLNAME[strlen(transrec.CLNAME) - 1] = 0x0;
-                    Qp0zLprintf("rfb->num_bytes = %d, sending back %s",
+                    /* Chop blanks at end of string. Omit \0 at end! */
+                    for ( i = sizeof(transrec.CLNAME) - 1; i >= 0; i-- ) {
+                        if ( transrec.CLNAME[i] == ' '
+                             || transrec.CLNAME[i] == '\t' ) {
+                                transrec.CLNAME[i] = '\0';
+                        } else {
+                            break;
+                        }
+                    }
+
+                    Qp0zLprintf("rfb->num_bytes = %d, sending back '%s'\n",
                         rfb->num_bytes, transrec.CLNAME);
                     seprintf(e_a_ccsid, ebcdicBuf, "%s", transrec.CLNAME);
                 }
+                /* FIXME: Maybe add a newline, for more convenient debugging? */
                 sendto(sockfd, ebcdicBuf, strlen(ebcdicBuf), 0,
                         (struct sockaddr *)&client_addr, len);
             }

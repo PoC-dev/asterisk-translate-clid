@@ -1,4 +1,4 @@
-     HCOPYRIGHT('Patrik Schindler <poc@pocnet.net>, 2020-10-07')
+     HCOPYRIGHT('Patrik Schindler <poc@pocnet.net>, 2022-10-27')
      H*-------------------------------------------------------------------------
      H* Licensing terms.
      H* This is free software; you can redistribute it and/or
@@ -91,6 +91,32 @@
      D*
      D* How many times did we loop through "read changed SFL records?".
      DREADC$           S              2S 0
+     D*
+     D* Struct for QMHSNDPM Data.
+     DQMHSNDPMDS       DS                  INZ
+     D MsgID                          7A
+     D MsgFile                       20A
+     D MsgData                      256A
+     D MsgDataLen                    10I 0
+     D MsgType                       10A
+     D CallStkEntry                  10A
+     D CallStkCntr                   10I 0
+     D RtnMsgKey                      4A
+     D ErrCode                       16A
+     D*
+     D* -----------------------------------------------------------------------
+     D* Send Program Message API.
+     DQMHSNDPM         PR                  ExtPgm('QMHSNDPM')
+     D MsgID                          7A   CONST
+     D MsgFile                       20A   CONST
+     D MsgData                      256A   CONST
+     D MsgDataLen                    10I 0 CONST
+     D MsgType                       10A   CONST
+     D CallStkEntry                  10A   CONST
+     D CallStkCntr                   10I 0 CONST
+     D RtnMsgKey                      4A   CONST
+     D ErrCode                       16A   CONST
+     D*
      D*************************************************************************
      C* Start the main loop: Write SFLCTL and wait for keypress to read.
      C*  This will be handled after *INZSR was implicitly called by RPG for
@@ -101,7 +127,7 @@
      C* Only write changed screen if there actually was a change.
      C     *IN73         IFEQ      *OFF
      C*
-     C* Show  F-Key footer display.
+     C* Show F-Key footer display.
      C                   WRITE     MAINBTM
      C*
      C* Make sure, we have an indicator of "no records" when SFL is empty.
@@ -213,6 +239,8 @@
      C                   SELECT
      C     OPT           WHENEQ    '2'
      C                   EXSR      CHGREC
+     C* We possibly have locked a record before.
+     C                   UNLOCK    CLIDTRNSPF
      C*
      C     OPT           WHENEQ    '3'
      C                   EXSR      DUPREC
@@ -240,6 +268,11 @@
      C* Finally, update the record in the SFL.
      C                   UPDATE    MAINSFL
      C*
+     C* User may quit from current READC-loop.
+     C     *IN03         IFEQ      *ON
+     C                   MOVE      *OFF          *IN03
+     C                   RETURN
+     C                   ENDIF
      C* User may interrupt current READC-loop.
      C     *IN12         IFEQ      *ON
      C                   MOVE      *OFF          *IN12
@@ -386,6 +419,12 @@
      C     *INZSR        BEGSR
      C* Stuff to do before the main routine starts.
      C*
+     C* Provide message handling defaults.
+     C                   MOVE      'GENERICMSG'  MsgFile
+     C                   CAT       '*LIBL     '  MsgFile
+     C                   MOVE      '*STATUS   '  MsgType
+     C                   MOVE      '*EXT      '  CallStkEntry
+     C                   MOVE      *ZERO         CallStkCntr
      C*
      C* Load Subfile, jump to record 1.
      C                   EXSR      LOADDSPSFL
@@ -407,6 +446,14 @@
      C     FSTAT         WHENEQ    1218
      C* Error 1218 = Desired record is locked.
      C                   MOVE      *ON           *IN93
+     C                   OTHER
+     C* Other error happened. Output error number for diagnosis.
+     C                   MOVE      'ERR0000'     MsgID
+     C                   EVAL      MsgData = %CHAR(FSTAT)
+     C                   EVAL      MsgDataLen = %LEN(%TRIM(MsgData))
+     C                   CALLP     QMHSNDPM( MsgID : MsgFile : MsgData :
+     C                             MsgDataLen : MsgType : CallStkEntry :
+     C                             CallStkCntr : RtnMsgKey : ErrCode )
      C                   ENDSL
      C*
      C                   ENDSR
@@ -611,9 +658,6 @@
      C* Set Reload-Indicator to reflect changes.
      C                   MOVE      *ON           *IN79
      C*
-     C* Unlock after insert, so others can use the record.
-     C                   UNLOCK    CLIDTRNSPF
-     C*
      C* If there was no change in display (IN28).
      C                   ELSE
      C                   MOVE      *ON           *IN85
@@ -627,7 +671,9 @@
      C                   ENDSR
      C*************************************************************************
      C     DUPREC        BEGSR
-     C* Set "we wanna duplicate" flag and let CHGREC do the hard work.
+     C* Set "we wanna duplicate" flag, no last state of cursor-placement,
+     C*  and let CHGREC do the hard work.
+     C                   MOVEA     '0000000000'  *IN(60)
      C                   MOVE      *ON           *IN78
      C                   EXSR      CHGREC
      C                   MOVE      *OFF          *IN78
@@ -697,8 +743,6 @@
      C* Whee! User pressed a key! May we add (duplicate) or change a record?
      C     *IN03         IFEQ      *ON
      C     *IN12         OREQ      *ON
-     C* We possibly have locked a record before.
-     C                   UNLOCK    CLIDTRNSPF
      C                   LEAVESR
      C                   ENDIF
      C*
@@ -736,12 +780,6 @@
      C* Set Reload-Indicator to reflect changes.
      C                   MOVE      *ON           *IN79
      C*
-     C* Unconditionally unlock, so others can use the record.
-     C                   UNLOCK    CLIDTRNSPF
-     C*
-     C* Keep cursor on the selected record.
-     C                   SUB       1             SFLRCDNBR
-     C*
      C                   ENDSR
      C*************************************************************************
      C     DSPREC        BEGSR
@@ -773,7 +811,7 @@
      C                   EXFMT     DETAILFRM
      C                   EXSR      RSTDSPMOD
      C*
-     C* Whee! User pressed a key! May we add (duplicate) or change a record?
+     C* Whee! User pressed a key!
      C     *IN03         IFEQ      *ON
      C     *IN12         OREQ      *ON
      C                   LEAVESR
@@ -811,4 +849,4 @@
      C*
      C                   ENDSR
      C*************************************************************************
-     C* vim: syntax=rpgle colorcolumn=81 autoindent
+     C* vim: syntax=rpgle colorcolumn=81 autoindent noignorecase
