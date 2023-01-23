@@ -104,7 +104,7 @@ Upload these files with any FTP client **in ASCII mode** into
 ASTSUPPORT/SOURCES. Then set their file type with WRKMBRPDM in the 5250 session
 as shown above. Now you can just type 14 beneath the objects to create them.
 
-The provided Makefile is based on some assumptions:
+The provided Makefile is optional and based on some assumptions:
 - You installed TMKMAKE according to the instructions in
   QUSRTOOL/QATTINFO.TMKINFO. If that library is not found, you need to install
   the "example programs" available on your install media.
