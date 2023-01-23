@@ -97,11 +97,20 @@ clidtrnslf.dds     CLIDTRNSLF   LF
 calltransd.c       CALLTRANSD   C
 clidtrnsdf.dds     CLIDTRNSDF   DSPF
 clidtrnspg.rple    CLIDTRNSPG   RPGLE
+Makefile           MAKEFILE     TXT
 ```
 
 Upload these files with any FTP client **in ASCII mode** into
 ASTSUPPORT/SOURCES. Then set their file type with WRKMBRPDM in the 5250 session
 as shown above. Now you can just type 14 beneath the objects to create them.
+
+The provided Makefile is based on some assumptions:
+- You installed TMKMAKE according to the instructions in
+  QUSRTOOL/QATTINFO.TMKINFO. If that library is not found, you need to install
+  the "example programs" available on your install media.
+- The initial, empty PF must be manually created
+- There must be a SRC PF called BLDTMSTMPS. This is required to track time stamps
+  of changing files, such as PFs and LFs.
 
 **Note!** You need to create the physical files first, because they are
 referenced in the programs. When the objects don't exist and you try to compile
@@ -127,11 +136,10 @@ If something does not work, check:
 You probably have had created all the needed objects already, so you can start
 the program with `CALL PGM(CLIDTRNSPG)`.
 
-***Note!*** There is currently no online help, and if an error occurs, you'll
-probably get a second-level-error that a message file *genericsmsg* could not be
-found. See my [generic Subfile project on
-Github](https://github.com/PoC-dev/as400-sfltemplates-german) for crtmsgd REXX
-script which should create this file for you - with German Text, though.
+***Note!*** If an error occurs, you'll probably get a second-level-error that a
+message file *genericsmsg* could not be found. See my [generic Subfile project
+on Github](https://github.com/PoC-dev/as400-sfltemplates-german) for crtmsgd
+REXX script which should create this file for you - with German Text, though.
 
 ### Asterisk Configuration
 You need to have Netcat installed, and need to make sure you allow all necessary
@@ -145,14 +153,11 @@ After you added some entries to the database, you can try the command on the
 command line to see if you have a problem within Asterisk, or elsewhere.
 
 ## Current state
-- There is a lot of blanks returned after actual data. Asterisk happily throws
-  them away when assigning variables.
 - Maintenance application is German, maybe not the best pick for an
   international audience. But since I am German... (I'm learning constantly
   about OS/400, and when I have enough motivation, I'll come up with a project-
   independent way of providing multiple language support, as well as
   translations for existing projects.)
-- No online help for the maintenance application.
 - Autostart of job at SBS start works.
 - Graceful end of background ("batch") job works.
 
@@ -162,4 +167,4 @@ Also see FIXME remarks in the source code.
 You may write email to poc@pocnet.net for questions and general contact.
 
 Patrik Schindler,
-December 2021
+January, 2023
