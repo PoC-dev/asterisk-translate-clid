@@ -108,9 +108,11 @@ The provided Makefile is based on some assumptions:
 - You installed TMKMAKE according to the instructions in
   QUSRTOOL/QATTINFO.TMKINFO. If that library is not found, you need to install
   the "example programs" available on your install media.
-- The initial, empty PF must be manually created
+- The initial, empty PF must be manually created.
 - There must be a SRC PF called BLDTMSTMPS. This is required to track time stamps
   of changing files, such as PFs and LFs.
+- The existence of a CMDCTI menu source is assumed. This is not part of this
+  project, though.
 
 **Note!** You need to create the physical files first, because they are
 referenced in the programs. When the objects don't exist and you try to compile

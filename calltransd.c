@@ -227,6 +227,9 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        /* FIXME: Use client_addr to output source address/port. */
+        /* FIXME: Use client_addr to decide if we allow that packet. */
+
         /* Convert EOL to EOS */
         for ( i = 0; i++; i < BUFSIZ ) {
             if ( asciiBuf[i] == _CR || asciiBuf[i] == _LF ) {
@@ -261,13 +264,13 @@ int main(int argc, char *argv[]) {
                  *        but we wanna know *what* went wrong, also.
                  */
                 if (( rfb->num_bytes < _TRANSRECSZ )) {
-                    Qp0zLprintf("rfb->num_bytes = %d, sending back '%s'\n",
-                        rfb->num_bytes, number);
+                    /* Just send back number as received. */
                     seprintf(e_a_ccsid, ebcdicBuf, "%s", number);
 
                 } else {
                     /* Chop blanks at end of string. Omit \0 at end! */
                     for ( i = sizeof(transrec.CLNAME) - 1; i >= 0; i-- ) {
+                        /* Poor man's isblank() - only available in C++ here. */
                         if ( transrec.CLNAME[i] == ' '
                              || transrec.CLNAME[i] == '\t' ) {
                                 transrec.CLNAME[i] = '\0';
@@ -275,12 +278,9 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                     }
-
-                    Qp0zLprintf("rfb->num_bytes = %d, sending back '%s'\n",
-                        rfb->num_bytes, transrec.CLNAME);
                     seprintf(e_a_ccsid, ebcdicBuf, "%s", transrec.CLNAME);
                 }
-                /* FIXME: Maybe add a newline, for more convenient debugging? */
+                /* FIXME: Maybe add a newline, for more convenient output? */
                 sendto(sockfd, ebcdicBuf, strlen(ebcdicBuf), 0,
                         (struct sockaddr *)&client_addr, len);
             }
