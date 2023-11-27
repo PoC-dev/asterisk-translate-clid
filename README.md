@@ -140,7 +140,7 @@ the program with `CALL PGM(CLIDTRNSPG)`.
 
 ***Note!*** If an error occurs, you'll probably get a second-level-error that a
 message file *genericsmsg* could not be found. See my [generic Subfile project
-on Github](https://github.com/PoC-dev/as400-sfltemplates-german) for crtmsgd
+on Github](https://github.com/PoC-dev/as400-sfltemplates) for crtmsgd
 REXX script which should create this file for you - with German Text, though.
 
 ### Asterisk Configuration
