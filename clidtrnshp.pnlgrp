@@ -1,0 +1,145 @@
+:PNLGRP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='GLOBAL'.Rufnummernübersetzung
+:P.Diese Applikation erlaubt die Pflege einer Tabelle mit Rufnummern und Namen.
+Analog zu PTR-Records im DNS werden diese Namen bei Anrufen zu bestehenden
+Signalisierungseinrichtungen (Display der Hardwaretelefone, etc.) den Rufnummern
+hinzugefügt.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='MAIN/SFLOPTS'.Auswahloptionen
+:XH3.Auswahloptionen
+:P.Für die Liste gültige Auswahl-Werte, welche in der Spalte :HP3.Opt:EHP3.
+eingegeben werden können:
+:PARML.
+:PT.2=Ändern
+:PD.Markierte Einträge können in einer gesonderten Bildschirmanzeige individuell
+angepasst werden.
+:PT.3=Duplizieren
+:PD.Markierte Einträge können in einer gesonderten Bildschirmanzeige individuell
+angepasst werden. Diese werden allerdings als neuer Datensatz gespeichert. Es
+darf daher keine Dublette eines bereits existierenden Satzes angelegt werden.
+:PT.4=Löschen
+:PD.Markierte Einträge werden zum Löschen vorgemerkt. In einer weiteren
+Bildschirmanzeige kann dieser Vorgang bestätigt oder abgebrochen werden.
+:PT.5=Anzeigen
+:PD.Wie Option 2, allerdings können keine Änderungen durchgeführt werden.
+:EPARML.
+:NOTE.Ein Datensatz kann nur von einer Arbeitsstation gleichzeitig bearbeitet
+werden. Ist ein Datensatz bereits durch einen anderen Benutzer gesperrt, wird
+dieser auf der anfragenden Arbeitsstation nur zum Betrachten geöffnet.
+Änderungen sind nicht möglich. Der Anwender sollte aus diesem Grund vermeiden,
+Datensätze nur zur Einsicht mit Opt :HP1.2=Ändern:EHP1. zu öffnen. Die Benutzung
+von Opt :HP1.5=Anzeigen:EHP1. ist vorteilhafter, da sie es anderen Bedienern
+ermöglicht, den Datensatz zu ändern, weil der Benutzer den Datensatz dann nicht
+unnötigerweise zum Bearbeiten gesperrt hat.
+:ENOTE.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='SFLHDR/OPT'.Spalte Opt
+:XH3.Spalte Opt
+:P.In diese Spalte eine Auswahlziffer eingegeben, um den Datensatz zum einen zu
+Selektieren und zum anderen vorzugeben, was das System mit diesem Satz tun soll.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='SFLHDR/CLID'.Spalte Rufnummer
+:XH3.Spalte Rufnummer
+:P.Hier wird die zu übersetzende Festnetz-Rufnummer ausgegeben.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='SFLHDR/CLNAME'.Spalte Eintrag
+:XH3.Spalte Rufnummer
+:P.Hier wird der hinterlegte Name für die gegebene Rufnummer ausgegeben.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='MAIN/SFLDTA'.Datenbereich
+:XH3.Datenbereich
+:P.Hier sind einige Datensätze aus der Gesamtheit aller vorhandenen Datensätze
+sichtbar. Änderungen können nicht direkt vorgenommen werden. Dazu sind die
+bereits erwähnten Selektionen in der Opt-Spalte da.
+:NOTE.Die Opt-Selektionen werden über Scrollgrenzen hinweg beibehalten.
+:ENOTE.
+:P.Eine Anzeige am rechten unteren Ende des scrollbaren Bereichs macht darauf
+aufmerksam, wenn die Liste der dargestellten Datensätze am Ende angekommen ist
+und keine weiteren Datensätze mehr vorhanden sind.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='MAIN/SFLBTM'.Funktionstasten
+:XH3.Funktionstasten
+:PARML.
+:PT.F1=Hilfe
+:PD.Ruft die cursorpositionsabhängige Hilfefunktion auf.
+:PT.F3=Verlassen
+:PD.Beendet die Listenansicht und gibt die Kontrolle an das vorherige Menü
+zurück.
+:PT.F5=Aktualisieren
+:PD.Forciert einen Neuaufbau des dargestellten Listenausschnittes aus der
+Datenbank.
+:PT.F6=Neu
+:PD.Ruft die Bildschirmanzeige zum Hinzufügen eines neuen Datensatzes auf.
+:PT.F12=Abbrechen
+:PD.Beendet die momentan aufgerufene Funktion und kehrt zur vorherigen Anzeige
+zurück.
+:EPARML.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='MAIN/SFLND'.Keine Datensätze zum Anzeigen
+:XH3.Keine Datensätze zum Anzeigen
+:P.Diese Anzeige wird dann eingeblendet, wenn keine Datensätze für die
+Listendarstellung gefunden werden konnten.
+:P.Dies kann in einer leeren Datenbankdatei begründet sein.
+:EHELP.
+.* -----------------------------------------------------------------------------
+.* -----------------------------------------------------------------------------
+:HELP NAME='DETAIL/MODE'.Modus
+:XH3.Modus
+:P.In diesem Bereich wird ausgegeben, in welchem Modus die Datenfelder derzeit
+dargestellt werden:
+:PARML.
+:PT.Neuen Eintrag erfassen
+:PD.Falls F6=Neu gewählt wurde, sind alle Datenfelder leer und zum Ausfüllen
+bereit. Falls Opt :HP1.3=Duplizieren:EHP1. gewählt wurde, werden die Werte vom
+markierten Datensatz übernommen, damit nur Änderungen eingetragen werden müssen.
+Das Betätigen der Eingabetaste legt einen neuen Datensatz an.
+:PT.Eintrag ändern
+:PD.Die vorhandenen Werte des Datensatzes werden angezeigt, damit diese
+korrigiert werden können.
+:PT.Eintrag anzeigen
+:PD.Die vorhandenen Werte des Datensatzes werden ohne Änderungsmöglichkeiten
+angezeigt.
+:EPARML.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='DETAIL/OPTIONS'.Tätigkeiten
+:XH3.Tätigkeiten
+:P.Hier kann der Anwender sehen, welche Tätigkeit er im derzeitigen Modus
+durchführen kann.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='DFIELD/CLID'.Rufnummer
+:XH3.Rufnummer
+:P.In diesem Feld wird die Festnetz-Rufnummer für den anzuzeigenden Namen
+eingetragen.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='DFIELD/CLNAME'.Name
+:XH3.Name
+:P.In diesem Feld ein Name für die gegebene Rufnummer eingetragen.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:HELP NAME='DETAIL/FKEYS'.Funktionstasten
+:XH3.Funktionstasten
+:PARML.
+:PT.F1=Hilfe
+:PD.Ruft die cursorpositionsabhängige Hilfefunktion auf.
+:PT.F3=Verlassen
+:PD.Beendet die Detailansicht und gibt die Kontrolle an das vorherige Menü
+zurück.
+:PT.F12=Abbrechen
+:PD.Beendet die momentan aufgerufene Funktion und kehrt zur vorherigen Anzeige
+zurück.
+:EPARML.
+:EHELP.
+.* -----------------------------------------------------------------------------
+:EPNLGRP.
+.* vim: ft=pnlgrp textwidth=80 colorcolumn=81
