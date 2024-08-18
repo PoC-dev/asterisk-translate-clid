@@ -1,18 +1,19 @@
-     A* Licensing terms.
-     A* This is free software; you can redistribute it and/or
-     A* modify it under the terms of the GNU General Public License as published
-     A* by the Free Software Foundation; either version 2 of the License, or
-     A* (at your option) any later version.
+     A* Copyright 2021-2024 Patrik Schindler <poc@pocnet.net>.
      A*
-     A* It is distributed in the hope that it will be useful,
-     A* but WITHOUT ANY WARRANTY; without even the implied warranty of
-     A* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     A* GNU General Public License for more details.
+     A* This file is part of asterisk-translate-clid. It is is free software;
+     A* you can redistribute it and/or modify it under the terms of the GNU
+     A* General Public License as published by the Free Software Foundation;
+     A* either version 2 of the License, or (at your option) any later version.
      A*
-     A* You should have received a copy of the GNU General Public License
-     A* along with this; if not, write to the Free Software
-     A* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-     A* or get it at http://www.gnu.org/licenses/gpl.html
+     A* It is distributed in the hope that it will be useful, but WITHOUT ANY
+     A* WARRANTY; without even the implied warranty of MERCHANTABILITY or
+     A* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+     A* for more details.
+     A*
+     A* You should have received a copy of the GNU General Public License along
+     A* with this; if not, write to the Free Software Foundation, Inc.,
+     A* 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA or get it at
+     A* http://www.gnu.org/licenses/gpl.html
      A*
      A* Globals ----------------------------------------------------------------
      A                                      REF(CLIDTRNSPF)
@@ -142,8 +143,8 @@
      A                                  4  3'4=Löschen  Leer=Nicht löschen'
      A                                      COLOR(BLU)
      A                                  6  2'Opt' DSPATR(HI) HLPID(1)
-     A                                  6  7'Wert' DSPATR(HI)
-     A                                  6 21'Eintrag' DSPATR(HI)
+     A                                  6  7'Rufnummer' DSPATR(HI)
+     A                                  6 21'Name' DSPATR(HI)
      A* Footer of the form -----------------------------------------------------
      A* A subfile control record may contain elements above or below the actual
      A* subfile, but not both.
@@ -169,19 +170,19 @@
      A*         ##Help Area definition for this screen.
      A                                      HLPTITLE('Rufnummernübersetzung')
      A          H                           HLPARA(1 1 1 80)
-     A                                      HLPPNLGRP('DETAIL/MODE' CLIDTRNDHP)
+     A                                      HLPPNLGRP('DETAIL/MODE' CLIDTRNSHP)
      A          H                           HLPARA(3 1 3 80)
      A                                      HLPPNLGRP('DETAIL/OPTIONS'
-     A                                      CLIDTRNDHP)
+     A                                      CLIDTRNSHP)
      A          H                           HLPARA(5 1 5 80)
      A                                      HLPPNLGRP('DFIELD/CLID'
-     A                                      CLIDTRNDHP)
+     A                                      CLIDTRNSHP)
      A          H                           HLPARA(7 1 7 80)
      A                                      HLPPNLGRP('DFIELD/CLNAME'
-     A                                      CLIDTRNDHP)
+     A                                      CLIDTRNSHP)
      A          H                           HLPARA(23 1 23 80)
      A                                      HLPPNLGRP('DETAIL/FKEYS'
-     A                                      CLIDTRNDHP)
+     A                                      CLIDTRNSHP)
      A*         ##End of definitions. Here be real screen elements.
      A  42N43                           1 30'Neuen Eintrag erfassen'
      A                                      DSPATR(HI)

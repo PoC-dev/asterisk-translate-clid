@@ -1,20 +1,21 @@
-     HCOPYRIGHT('Patrik Schindler <poc@pocnet.net>, 2022-10-27')
+     HCOPYRIGHT('Patrik Schindler <poc@pocnet.net>, 2024-08-18')
      H*-------------------------------------------------------------------------
-     H* Licensing terms.
-     H* This is free software; you can redistribute it and/or
-     H* modify it under the terms of the GNU General Public License as published
-     H* by the Free Software Foundation; either version 2 of the License, or
-     H* (at your option) any later version.
+     H* Copyright 2021-2024 Patrik Schindler <poc@pocnet.net>.
      H*
-     H* It is distributed in the hope that it will be useful,
-     H* but WITHOUT ANY WARRANTY; without even the implied warranty of
-     H* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     H* GNU General Public License for more details.
+     H* This file is part of asterisk-translate-clid. It is is free software;
+     H* you can redistribute it and/or modify it under the terms of the GNU
+     H* General Public License as published by the Free Software Foundation;
+     H* either version 2 of the License, or (at your option) any later version.
      H*
-     H* You should have received a copy of the GNU General Public License
-     H* along with this; if not, write to the Free Software
-     H* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-     H* or get it at http://www.gnu.org/licenses/gpl.html
+     H* It is distributed in the hope that it will be useful, but WITHOUT ANY
+     H* WARRANTY; without even the implied warranty of MERCHANTABILITY or
+     H* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+     H* for more details.
+     H*
+     H* You should have received a copy of the GNU General Public License along
+     H* with this; if not, write to the Free Software Foundation, Inc.,
+     H* 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA or get it at
+     H* http://www.gnu.org/licenses/gpl.html
      H*-------------------------------------------------------------------------
      H* Compiler flags.
      HDFTACTGRP(*NO) ACTGRP(*NEW)
@@ -37,7 +38,7 @@
      H*     33: SFLCLR.
      H*     34: SFLEND, EOF from Database file.
      H*- General DSPF Conditioning:
-     H*     42: Indicate ADDREC was called. (DSPF)
+     H*     42: Indicate ADDREC/DUPREC was called. (DSPF)
      H*     43: Indicate CHGREC was called. (DSPF)
      H*     44: Indicate DSPREC was called. (DSPF)
      H* 60..69: Detail record cursor placement. (DSPF)
@@ -72,6 +73,9 @@
      F* Main/primary file, used mainly for writing into.
      FCLIDTRNSPFUF A E           K DISK
      F*
+     F* For nice sorting
+     FCLIDTRNSLFIF   E           K DISK
+     F*
      F* Display file with multiple subfiles among other record formats.
      FCLIDTRNSDFCF   E             WORKSTN
      F                                     SFILE(MAINSFL:SFLRCDNBR)
@@ -91,31 +95,6 @@
      D*
      D* How many times did we loop through "read changed SFL records?".
      DREADC$           S              2S 0
-     D*
-     D* Struct for QMHSNDPM Data.
-     DQMHSNDPMDS       DS                  INZ
-     D MsgID                          7A
-     D MsgFile                       20A
-     D MsgData                      256A
-     D MsgDataLen                    10I 0
-     D MsgType                       10A
-     D CallStkEntry                  10A
-     D CallStkCntr                   10I 0
-     D RtnMsgKey                      4A
-     D ErrCode                       16A
-     D*
-     D* -----------------------------------------------------------------------
-     D* Send Program Message API.
-     DQMHSNDPM         PR                  ExtPgm('QMHSNDPM')
-     D MsgID                          7A   CONST
-     D MsgFile                       20A   CONST
-     D MsgData                      256A   CONST
-     D MsgDataLen                    10I 0 CONST
-     D MsgType                       10A   CONST
-     D CallStkEntry                  10A   CONST
-     D CallStkCntr                   10I 0 CONST
-     D RtnMsgKey                      4A   CONST
-     D ErrCode                       16A   CONST
      D*
      D*************************************************************************
      C* Start the main loop: Write SFLCTL and wait for keypress to read.
@@ -345,7 +324,7 @@
      C                   WRITE     MAINCTL
      C                   MOVE      *OFF          *IN33
      C*
-     C     *LOVAL        SETLL     CLIDTRNSTB
+     C     *LOVAL        SETLL     CLIDTRNS2
      C*
      C                   ENDSR
      C*************************************************************************
@@ -367,7 +346,7 @@
      C*----------------------------
      C* Read loop start.
      C     *ZERO         DOWEQ     *ZERO
-     C                   READ(N)   CLIDTRNSTB                             34
+     C                   READ(N)   CLIDTRNS2                              34
      C     *IN34         IFEQ      *ON
      C                   LEAVE
      C                   ENDIF
@@ -419,13 +398,6 @@
      C     *INZSR        BEGSR
      C* Stuff to do before the main routine starts.
      C*
-     C* Provide message handling defaults.
-     C                   MOVE      'GENERICMSG'  MsgFile
-     C                   CAT       '*LIBL     '  MsgFile
-     C                   MOVE      '*STATUS   '  MsgType
-     C                   MOVE      '*EXT      '  CallStkEntry
-     C                   MOVE      *ZERO         CallStkCntr
-     C*
      C* Load Subfile, jump to record 1.
      C                   EXSR      LOADDSPSFL
      C                   Z-ADD     1             SFLRCDNBR
@@ -435,6 +407,7 @@
      C     SETERRIND     BEGSR
      C* Set *INxx to show errors in the message line. These have been defined
      C*  in the appropriate display file.
+     C* Other errors shall be catched by the OS handler.
      C*
      C                   SELECT
      C     FSTAT         WHENEQ    12
@@ -446,14 +419,6 @@
      C     FSTAT         WHENEQ    1218
      C* Error 1218 = Desired record is locked.
      C                   MOVE      *ON           *IN93
-     C                   OTHER
-     C* Other error happened. Output error number for diagnosis.
-     C                   MOVE      'ERR0000'     MsgID
-     C                   EVAL      MsgData = %CHAR(FSTAT)
-     C                   EVAL      MsgDataLen = %LEN(%TRIM(MsgData))
-     C                   CALLP     QMHSNDPM( MsgID : MsgFile : MsgData :
-     C                             MsgDataLen : MsgType : CallStkEntry :
-     C                             CallStkCntr : RtnMsgKey : ErrCode )
      C                   ENDSL
      C*
      C                   ENDSR
@@ -579,7 +544,7 @@
      C     DOPT          IFEQ      '4'
      C*
      C* Delete record.
-     C     CLNAME        DELETE(E) CLIDTRNSTB
+     C     CLID          DELETE(E) CLIDTRNS1
      C                   EVAL      FSTAT=%STATUS(CLIDTRNSPF)
      C     FSTAT         IFGT      *ZERO
      C                   EXSR      SETERRIND
@@ -645,7 +610,7 @@
      C     *IN98         OREQ      *ON
      C*
      C* Try to write the record.
-     C                   WRITE(E)  CLIDTRNSTB
+     C                   WRITE(E)  CLIDTRNS1
      C                   EVAL      FSTAT=%STATUS(CLIDTRNSPF)
      C     FSTAT         IFGT      *ZERO
      C                   MOVE      *ON           *IN98
@@ -694,9 +659,9 @@
      C*
      C* No lock needed for duplication, but for updating.
      C     *IN78         IFEQ      *ON
-     C     CLNAME        CHAIN(EN) CLIDTRNSTB
+     C     CLID          CHAIN(EN) CLIDTRNS1
      C                   ELSE
-     C     CLNAME        CHAIN(E)  CLIDTRNSTB
+     C     CLID          CHAIN(E)  CLIDTRNS1
      C                   ENDIF
      C*
      C                   EVAL      FSTAT=%STATUS(CLIDTRNSPF)
@@ -753,9 +718,9 @@
      C*
      C* Try to write or update the record.
      C     *IN78         IFEQ      *ON
-     C                   WRITE(E)  CLIDTRNSTB
+     C                   WRITE(E)  CLIDTRNS1
      C                   ELSE
-     C                   UPDATE(E) CLIDTRNSTB
+     C                   UPDATE(E) CLIDTRNS1
      C                   ENDIF
      C                   EVAL      FSTAT=%STATUS(CLIDTRNSPF)
      C     FSTAT         IFGT      *ZERO
@@ -792,7 +757,7 @@
      C                   Z-ADD     99999         FSTAT
      C     FSTAT         DOUEQ     *ZERO
      C*
-     C     CLNAME        CHAIN(EN) CLIDTRNSTB
+     C     CLID          CHAIN(EN) CLIDTRNS1
      C*
      C                   EVAL      FSTAT=%STATUS(CLIDTRNSPF)
      C     FSTAT         IFGT      *ZERO

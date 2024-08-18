@@ -55,13 +55,13 @@ addsrvtble service('CALLTRANSD') port(10001) protocol('UDP')
 
 ### Files: Naming and upload
 ```
-Repository name | MBR Name   | Type 
-----------------+------------+------
-clidtrnspf.dds  | clidtrnspf | PF
-clidtrnslf.dds  | clidtrnslf | LF
-calltransd.c    | calltransd | C
-clidtrnsdf.dds  | clidtrnsdf | DSPF
-clidtrnspg.rple | clidtrnspg | RPGLE
+Repository name  | MBR Name   | Type 
+-----------------+------------+------
+clidtrnspf.dds   | clidtrnspf | PF
+clidtrnslf.dds   | clidtrnslf | LF
+calltransd.c     | calltransd | C
+clidtrnsdf.dds   | clidtrnsdf | DSPF
+clidtrnspg.rpgle | clidtrnspg | RPGLE
 ```
 Upload these files with any FTP client **in ASCII mode** into *ASTSUPPORT/SOURCES*. Then set their file type with WRKMBRPDM in the 5250 session as shown above. To ease this undertaking, you can feed *ftpupload.txt* to stdin of your preferred command line FTP client.
 ```

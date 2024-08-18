@@ -1,27 +1,28 @@
-     A* Licensing terms.
-     A* This is free software; you can redistribute it and/or
-     A* modify it under the terms of the GNU General Public License as published
-     A* by the Free Software Foundation; either version 2 of the License, or
-     A* (at your option) any later version.
+     A* Copyright 2021-2024 Patrik Schindler <poc@pocnet.net>.
      A*
-     A* It is distributed in the hope that it will be useful,
-     A* but WITHOUT ANY WARRANTY; without even the implied warranty of
-     A* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     A* GNU General Public License for more details.
+     A* This file is part of asterisk-translate-clid. It is is free software;
+     A* you can redistribute it and/or modify it under the terms of the GNU
+     A* General Public License as published by the Free Software Foundation;
+     A* either version 2 of the License, or (at your option) any later version.
      A*
-     A* You should have received a copy of the GNU General Public License
-     A* along with this; if not, write to the Free Software
-     A* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-     A* or get it at http://www.gnu.org/licenses/gpl.html
+     A* It is distributed in the hope that it will be useful, but WITHOUT ANY
+     A* WARRANTY; without even the implied warranty of MERCHANTABILITY or
+     A* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+     A* for more details.
+     A*
+     A* You should have received a copy of the GNU General Public License along
+     A* with this; if not, write to the Free Software Foundation, Inc.,
+     A* 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA or get it at
+     A* http://www.gnu.org/licenses/gpl.html
      A*
      A* Globals ----------------------------------------------------------------
      A                                      UNIQUE
      A* Record Format Name -----------------------------------------------------
-     A          R CLIDTRNSTB
+     A          R CLIDTRNS1
      A* Data fields
      A            CLID          12A
-     A            CLNAME        24A
+     A            CLNAME        32A
      A* Index fields
-     A          K CLNAME
+     A          K CLID
      A* For vim ----------------------------------------------------------------
-     A* vim: syntax=dds colorcolumn=81 autoindent
+     A* vim: syntax=dds colorcolumn=81 autoindent noignorecase
