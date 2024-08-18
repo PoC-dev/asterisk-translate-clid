@@ -1,21 +1,20 @@
 /*
- * Copyright 2021-2022 Patrik Schindler <poc@pocnet.net>.
+ * Copyright 2021-2024 Patrik Schindler <poc@pocnet.net>.
  *
- * Licensing terms.
- * This is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This file is part of asterisk-translate-clid. It is is free software; you
+ * can redistribute it and/or modify it under the terms of the GNU General
+ * Public License as published by the Free Software Foundation; either version
+ * 2 of the License, or (at your option) any later version.
  *
- * It is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * It is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * or get it at http://www.gnu.org/licenses/gpl.html
+ * You should have received a copy of the GNU General Public License along with
+ * this; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston, MA  02111-1307  USA or get it at
+ * http://www.gnu.org/licenses/gpl.html
  *
  * Based on the skeleton "Programming udp sockets in C on Linux
  * Silver Moon <m00n.silv3r@gmail.com>
@@ -43,7 +42,7 @@
 /* Files ---------------------------------------------------------------------*/
 
 /* Important! This statement is about the compiled object, not the source! */
-#pragma mapinc("TRANSTBL", "ASTSUPPORT/CLIDTRNSLF(*ALL)", "input", "_P", "")
+#pragma mapinc("TRANSTBL", "ASTSUPPORT/CLIDTRNSPF(*ALL)", "input", "_P", "")
 #include "TRANSTBL"
 #define _TRANSRECSZ sizeof(transrec)
 
@@ -89,7 +88,7 @@ int convert_buffer(char *inBuf, char *outBuf, int inBufLen, int outBufLen,
     return(retval);
 }
 
-/* Print EBCDIC buffer to string as ASCII. -----------------------------------*/
+/* Print EBCDIC buffer to c-string as ASCII. ---------------------------------*/
 
 int seprintf(iconv_t convtable, char *dststr, char *format, ...) {
     va_list va;
@@ -121,7 +120,7 @@ void set_exit_flag(int signum) {
 int main(int argc, char *argv[]) {
 	_RFILE *fp;
 	_RIOFB_T *rfb;
-    ASTSUPPORT_CLIDTRNSLF_CLIDTRNSTB_i_t transrec;
+    ASTSUPPORT_CLIDTRNSPF_CLIDTRNS1_i_t transrec;
     QtqCode_T jobCode = {0,0,0,0,0,0};
     QtqCode_T asciiCode = {819,0,0,0,0,0};
     struct sockaddr_in server_addr, client_addr;
@@ -205,7 +204,7 @@ int main(int argc, char *argv[]) {
 
 
 	/* Open file with updating only the number of r/w bytes in _RIOFB_T */
-	if ((fp = _Ropen ("ASTSUPPORT/CLIDTRNSLF", "rr, riofb=n")) == NULL) {
+	if ((fp = _Ropen ("ASTSUPPORT/CLIDTRNSPF", "rr, riofb=n")) == NULL) {
 		die("Error opening database file");
 	}
 
@@ -230,7 +229,7 @@ int main(int argc, char *argv[]) {
         /* FIXME: Use client_addr to output source address/port. */
         /* FIXME: Use client_addr to decide if we allow that packet. */
 
-        /* Convert EOL to EOS */
+        /* Convert end-of-line to end-of-string. */
         for ( i = 0; i++; i < BUFSIZ ) {
             if ( asciiBuf[i] == _CR || asciiBuf[i] == _LF ) {
                 asciiBuf[i] = '\0';
@@ -245,19 +244,20 @@ int main(int argc, char *argv[]) {
              */
             convert_buffer(asciiBuf, ebcdicBuf, strlen(asciiBuf),
                     strlen(asciiBuf), a_e_ccsid);
+            Qp0zLprintf("Got request: %s\n", ebcdicBuf);
 
             if ( strncmp(ebcdicBuf, "TRANSLATE", 9) == 0 ) {
                 /* Extract number to translate. */
                 number = strtok(ebcdicBuf, " ");
                 number = strtok(NULL, " ");
                 number[strlen(number) - 1] = 0x0;
+                Qp0zLprintf("Extracted Number: %s\n", number);
 
                 /* FIXME: Check if our input is all digits. */
 
                 /* Locate record and print what we've found. */
                 rfb = _Rreadk(fp, &transrec, _TRANSRECSZ, __DFT,
                         number, strlen(number));
-                memset(ebcdicBuf, '\0', BUFSIZE);
 
                 /* FIXME: Error handling! We only know if there was something
                  *        wrong when we don't receive a full-sized record,
@@ -278,6 +278,7 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                     }
+                    Qp0zLprintf("Sending answer: %s\n", transrec.CLNAME);
                     seprintf(e_a_ccsid, ebcdicBuf, "%s", transrec.CLNAME);
                 }
                 /* FIXME: Maybe add a newline, for more convenient output? */
