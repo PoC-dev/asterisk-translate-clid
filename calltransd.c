@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     struct servent *whoami;
     struct sigaction termaction;
     char asciiBuf[BUFSIZE], ebcdicBuf[BUFSIZE], cmdBuf[BUFSIZE], *number;
-    int sockfd, len;
+    int sockfd, len, numberlength;
     static int setsockopt_flag=1;
     unsigned int strlen, i, n;
 
@@ -250,10 +250,9 @@ int main(int argc, char *argv[]) {
                 /* Extract number to translate. */
                 number = strtok(ebcdicBuf, " ");
                 number = strtok(NULL, " ");
-                number[strlen(number) - 1] = 0x0;
+                numberlength = strlen(number);
+                number[numberlength + 1] = 0x0;
                 Qp0zLprintf("Extracted Number: %s\n", number);
-
-                /* FIXME: Check if our input is all digits. */
 
                 /* Locate record and print what we've found. */
                 rfb = _Rreadk(fp, &transrec, _TRANSRECSZ, __DFT,
@@ -265,6 +264,7 @@ int main(int argc, char *argv[]) {
                  */
                 if (( rfb->num_bytes < _TRANSRECSZ )) {
                     /* Just send back number as received. */
+                    Qp0zLprintf("Can't find entry for: %s\n", number);
                     seprintf(e_a_ccsid, ebcdicBuf, "%s", number);
 
                 } else {
