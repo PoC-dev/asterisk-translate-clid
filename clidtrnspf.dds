@@ -20,7 +20,7 @@
      A* Record Format Name -----------------------------------------------------
      A          R CLIDTRNS1
      A* Data fields
-     A            CLID          12A
+     A            CLID          14A
      A            CLNAME        32A
      A* Index fields
      A          K CLID

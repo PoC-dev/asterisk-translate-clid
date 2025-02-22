@@ -1,6 +1,6 @@
 This repository contains a solution for resolving caller IDs to names.
 
-It is a client-server application server, and an AS/400 typical maintenance application for adding, editing, and deleting records of a database file containing caller IDs and names.
+It is a classic client-server application server, and an AS/400 typical maintenance application for adding, editing, and deleting records of a database file containing caller IDs and names.
 
 The application server is an udp-based socket server. It just listens to data, on an UDP socket, queries the database with that data, and either returns the CLID name if a match is found, or just the input, if not. A possible client is netcat in UDP mode.
 
@@ -31,7 +31,7 @@ crtsrcpf file(sources) rcdlen(112)
 ```
 Next, create a user profile for the programs to run with. 
 ```
-crtusrprf usrprf(astsupport) password(*none) curlib(astsupport) lmtcpb(*yes) text('Asterisk Support')
+crtusrprf usrprf(astsupport) password(*none) curlib(astsupport) lmtcpb(*yes) text('Asterisk Support') inlpgm(qwcclfec)
 ```
 Now we can create the run time environment objects.
 ```
@@ -83,6 +83,19 @@ If something does not work, check:
 - `dspmsg`
 - `dspmsg qsysopr`
 - `dsplog`
+
+### About Record-I/O, and C string handling
+There is a fundamental difference between the concept of record I/O, and string handling in the C language.
+
+Record I/O means that data entities, such as strings, have a predefined length. Unused space at the end of a string is filled with blank (space) characters until the length of the respective field is filled.
+
+C strings are terminated by a NULL character. Memory locations behind the end of the string variable might contain garbage or old data, and should be treated as undefined. Hence, C library string handling functions naturally assume, or implicitly write NULL characters.
+
+Programming on OS/400 in C requires to learn when which kind of string is needed, and the best way to convert between them.
+
+One way to deal with this is to use a second set of variables, being at least one position larger to accommodate the terminating NULL character, copying strings, and setting the string end to the first non-blank character by replacing that position with a NULL character. Drawback is that copying a string is less efficient than just modifying the original buffer. But the original buffer can be filled to the brim with characters, leaving no space for a terminating NULL.
+
+Personally, I declare that database fields have to be at least one position larger than the longest string. This is not error-proof but must suffice until I come up with a likewise efficient but better idea.
 
 ### Maintenance frontend compilation
 You probably have had created all the needed objects already, so you can start the program with `call pgm(clidtrnspg)`.

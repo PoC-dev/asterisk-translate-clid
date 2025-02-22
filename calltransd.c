@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 Patrik Schindler <poc@pocnet.net>.
+ * Copyright 2021-2025 Patrik Schindler <poc@pocnet.net>.
  *
  * This file is part of asterisk-translate-clid. It is is free software; you
  * can redistribute it and/or modify it under the terms of the GNU General
@@ -20,6 +20,8 @@
  * Silver Moon <m00n.silv3r@gmail.com>
  * http://www.binarytides.com/programming-udp-sockets-in-c-on-linux/
  *
+ * Compile with Option 14 + additional: OPTIMIZE(*FULL)
+ * For looking at generated file include headers, add OPTION(*SHOWUSR)
  */
 
 #include <errno.h>
@@ -66,7 +68,7 @@ int exit_flag;
 
 void die(char *s) {
     Qp0zLprintf("%s: %s\n", s, strerror(errno));
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 /* Charset conversion. -------------------------------------------------------*/
